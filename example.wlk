@@ -1,85 +1,61 @@
+object catalogoDeRaciones {
+    var raciones = [] 
+
+    method configurar(listaDeRaciones) {
+        raciones = listaDeRaciones
+    }
+    
+    method obtenerAplicable(porciones) = 
+        raciones.find({ tipo => tipo.esAplicable(porciones) })
+}
+
+class TipoRacion {
+    method esAplicable(porciones)
+    method calcularMultiplicador()
+}
+
+class RacionSnack inherits TipoRacion {
+    override method esAplicable(porciones) = porciones < 100
+    override method calcularMultiplicador() = 0.5
+}
+
+class RacionNormal inherits TipoRacion {
+    override method esAplicable(porciones) = porciones.between(100, 2000)
+    override method calcularMultiplicador() = 1.5
+}
+
+class RacionBanquete inherits TipoRacion {
+    override method esAplicable(porciones) = porciones > 2000
+    override method calcularMultiplicador() = 2.5
+}
+
 class Alimento {
+    const porciones 
 
-var property porcionModificacion
-var property  valorNutricionalBase 
-
-method valorNutricional()
-
+    method valorBase()
+    method porcionesReales() = porciones
+    
+    method valorNutricional() {
+        const estrategia = catalogoDeRaciones.obtenerAplicable(self.porcionesReales())
+        return self.valorBase() * estrategia.calcularMultiplicador()
+    }
 }
 
 class Fruta inherits Alimento {
-	
-	override method valorNutricional () {
-		
-		return porcionModificacion
-		
-	}
-	
-	
+    override method valorBase() = porciones.even() 
+    if (porciones > 0 ) { 0.5 } else { 0.3 }
 }
-
 
 class Verdura inherits Alimento {
-	
-	
-	override method valorNutricional () {
-		valorNutricionalBase = 1000
-		return porcionModificacion
-		
-	}
-	
+    override method valorBase() = 1000 
 }
-
 
 class Cereal inherits Alimento {
-	
-	override method valorNutricional () {
-		valorNutricionalBase = if(porcionModificacion.cantPorcionesDesperdiciadas() > 100)0 else 1.10
-		return porcionModificacion
-		
-	}
-	
-	
-}
+    const cantidadPorcionesServidas 
+    const cantidadPorcionesDesperdiciadas
+    
+    override method porcionesReales() = cantidadPorcionesServidas - cantidadPorcionesDesperdiciadas
 
-class Porcion {
-	
-var cantPorciones
-var cantPorcionesServidas
-var cantPorcionesDesperdiciadas
-
-method calculoValor(alimento)
-	
-}
-
-class Snack inherits Porcion {
-	
-	override method calculoValor(alimento) {
-		
-		return alimento.valorNutricional() + 0.5 
-		
-	}
-	
-}
-
-class Racion inherits Porcion {
-	
-	override method calculoValor(alimento) {
-		
-		return alimento.valorNutricional() + 1.5
-		
-	}
-	
-	
-}
-
-class Banquete inherits Porcion {
-	
-	override method calculoValor(alimento) {
-		
-		return alimento.valorNutricional() + 2.5
-		
-	}
-	
-	
+    override method valorBase() = cantidadPorcionesDesperdiciadas > 0 if 
+        { 1.10 } else { 1.0 }
 }
